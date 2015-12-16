@@ -1,24 +1,75 @@
 <?php
 /**
- * @author James Laffert
+ * @author ProudCity
  */
 
-class SocialFeed extends WP_Widget {
+use Proud\Core;
+
+class SocialFeed extends Core\ProudWidget {
 
   // proud libraries
   public static $libaries;
 
   function __construct() {
     parent::__construct(
-      'proud_social_widget', // Base ID
+      'proud_social_app', // Base ID
       __( 'Social feed', 'wp-proud-social-app' ), // Name
       array( 'description' => __( 'Dynamic social media feed', 'wp-proud-social-app' ), ) // Args
     );
+  }
 
-    // Init proud library on plugins loaded
-    add_action( 'init', [$this,'registerLibraries'] );
-    // Enqueue local frontend
-    add_action('wp_enqueue_scripts', array($this,'enqueueFrontend'));
+  function initialize() {
+
+    $services = array(
+      'facebook'=> array('name' => 'Facebook', 'icon' => 'fa-facebook-square'),
+      'twitter'=> array('name' => 'Twitter', 'icon' => 'fa-twitter-square'),
+      'youtube'=> array('name' => 'Youtube', 'icon' => 'fa-youtube-play'),
+      'instagram'=> array('name' => 'Instagram', 'icon' => 'fa-instagram'),
+      'ical'=> array('name' => 'iCal', 'icon' => 'fa-calendar'),
+      'rss'=> array('name' => 'RSS Feed', 'icon' => 'fa-rss')
+    );
+    $serviceOptions = array();
+    foreach($services as $key => $service) {
+      $serviceOptions[$key] = $service['name'];
+    }
+
+    $this->settings = [
+      'services' => [
+        '#type' => 'checkboxes',
+        '#title' => 'Services',
+        '#default_value' => array_keys($serviceOptions),
+        '#description' => 'What social services should appear?',
+        '#options' => $serviceOptions,
+        '#to_js_settings' => true
+      ],
+      'hide_controls' => [
+        '#type' => 'checkbox',
+        '#title' => 'Hide Controls?',
+        '#description' => 'Hide the service switcher toolbar?.',
+        '#return_value' => '1',
+        '#label_above' => true,
+        '#replace_title' => 'Yes',
+        '#default_value' => false,
+        '#to_js_settings' => true
+      ],
+      'widget_type' => [
+        '#type' => 'radios',
+        '#title' => 'Widget type',
+        '#description' => 'Choose between a static feed, animated social wall, and a timeline.',
+        '#default_value' => 'static',
+        '#options' => array(
+          'static' => 'Feed',
+          'wall' => 'Social wall',
+          'timeline' => 'Timeline'
+        )
+      ],
+      'post_count' => [
+        '#type' => 'text',
+        '#title' => 'Count',
+        '#description' => 'How many items to show',
+        '#default_value' => '20',
+      ]
+    ];
   }
 
   public function registerLibraries() {
@@ -45,67 +96,22 @@ class SocialFeed extends WP_Widget {
    * @param array $args     Widget arguments.
    * @param array $instance Saved values from database.
    */
-  public function widget( $args, $instance ) {
-
-    $conf = [
-      'accounts' => NULL,
-      'agency' => NULL,
-      'custom' => NULL,
-      'services' => ['facebook','twitter','instagram','youtube'],
-      'widget_type' => 'wall',
-      'post_count' => 20,
-      'show_controls' => TRUE,
-    ];
-
-    $app_id = 'social-app';
+  public function printWidget( $args, $instance ) {
+    $instance = $this->addSettingDefaults($instance);
 
     // Compile html into a url encoded string
     $lazy_html = rawurlencode(
-      '<div social-' . $conf['widget_type'] 
-      . ' social-post-count="' . $conf['post_count'] . '"'
-      . ( $conf['hide_controls'] ? '" social-hide-controls="true"' : '' )
-      . ( $conf['widget_type'] == 'static' ? '" social-static-cols="1"' : '' )
+      '<div social-' . $instance['widget_type'] 
+      . ' social-post-count="' . $instance['post_count'] . '"'
+      . ( $instance['hide_controls'] ? '" social-hide-controls="true"' : '' )
+      . ( $instance['widget_type'] == 'static' ? '" social-static-cols="1"' : '' )
       . '></div>');
     ?>
-    <div id="<?php print $app_id; ?>">
-      <div in-view="socialCompile = socialCompile || '<?php print $lazy_html; ?>'"
+    <div id="<?php print $this->id; ?>">
+      <div ng-init="$root.appId = '<?php print $this->id; ?>'" in-view="socialCompile = socialCompile || '<?php print $lazy_html; ?>'"
            lazy-compile="socialCompile" lazy-decode="true"></div>
     </div>
     <?php
-  }
-
-  /**
-   * Back-end widget form.
-   *
-   * @see WP_Widget::form()
-   *
-   * @param array $instance Previously saved values from database.
-   */
-  public function form( $instance ) {
-    $title = ! empty( $instance['title'] ) ? $instance['title'] : __( 'New title', 'wp-proud-social-app' );
-    ?>
-    <p>
-    <label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label> 
-    <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>">
-    </p>
-    <?php 
-  }
-
-  /**
-   * Sanitize widget form values as they are saved.
-   *
-   * @see WP_Widget::update()
-   *
-   * @param array $new_instance Values just sent to be saved.
-   * @param array $old_instance Previously saved values from database.
-   *
-   * @return array Updated safe values to be saved.
-   */
-  public function update( $new_instance, $old_instance ) {
-    $instance = array();
-    $instance['title'] = ( ! empty( $new_instance['title'] ) ) ? strip_tags( $new_instance['title'] ) : '';
-
-    return $instance;
   }
 }
 

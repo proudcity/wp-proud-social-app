@@ -1,11 +1,16 @@
 
 (function($, Proud) {
-  Proud.behaviors.socialApp = {
+  Proud.behaviors.proud_social_app = {
     attach: function(context, settings) {
-      var $app = $('#social-app', context);
-      $app.once('appinit', function() {
-        angular.bootstrap($app, ['socialAppParent']);
-      });
+      var instances = _.get(settings, 'proud_social_app.instances');
+      if (instances) {
+        $.each(instances, function(id, appVals) {
+          var $app = $('#' + id);
+          if(!$app.hasClass('ng-scope')) {
+            angular.bootstrap($app, ['socialAppParent']);
+          }
+        });
+      }
     }
   };
 })(jQuery, Proud);
