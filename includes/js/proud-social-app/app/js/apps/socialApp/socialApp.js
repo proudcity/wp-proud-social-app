@@ -4,17 +4,13 @@ angular.module('socialApp', [
   'iso.directives',
   'ngResource',
   'ngSanitize',
-  'angular-inview'
 ])
 
 .run(
   [          '$rootScope', '$window', 
     function ($rootScope,   $window) {
-
-      var drupal = typeof Drupal !== 'undefined' ? Drupal : {}; 
-
-      $rootScope.socialApi = _.get(drupal, 'settings.proud_social_app.socialApi') || 'http://45.55.8.62:8080/api/';
-      $rootScope.socialUser = _.get(drupal, 'settings.proud_social_app.social_user') || 'newyork_ny';
+      $rootScope.socialApi = _.get(Proud, 'settings.proud_social_app.socialApi') || 'http://45.55.8.62:8080/api/';
+      $rootScope.socialUser = _.get(Proud, 'settings.proud_social_app.social_user') || 'newyork_ny';
     }
   ]
 )
@@ -93,10 +89,13 @@ angular.module('socialApp', [
     };
 })
 
-.controller('SocialController', ['$scope', 'SocialFeed', '$filter', '$sce', 
-                         function($scope,   SocialFeed,   $filter,   $sce){
+.controller('SocialController', ['$scope', 'SocialFeed', '$filter', '$sce', '$rootScope', 
+                         function($scope,   SocialFeed,   $filter,   $sce,   $rootScope){
 
   $scope.inited = false;
+
+  // Get app settings
+  var appSettings = _.get(Proud, 'settings.proud_social_app.' + $rootScope.appId);
 
   var services = {
     'facebook': {name: 'Facebook', icon: 'fa-facebook-square'},
@@ -107,39 +106,38 @@ angular.module('socialApp', [
     'rss': {'name':  'RSS Feed', 'icon':  'fa-rss'}
   };
 
-  if(_.has(settings, 'agencies') && settings.agencies.length) {
-    citySocial = settings.city + '_' + settings.state_short;
-    citySocial = citySocial.toLowerCase().replace(' ', '');
-  }
+  // if(_.has(settings, 'agencies') && settings.agencies.length) {
+  //   citySocial = settings.city + '_' + settings.state_short;
+  //   citySocial = citySocial.toLowerCase().replace(' ', '');
+  // }
 
   this.serviceFeed = function() {
     this.userFeed.query({
-        'services[]': $scope.activeServices == 'all' ? _.keys(services) : [$scope.activeServices],
-        limit: limit
-      }, function(data) {
-        // First time through, find available services
-        if(!$scope.inited) {
-          var active = [];
-          _.map(data, function(item) {
-            active = _.union(active, [item.service]);
-          });
-          _.map(services, function(service, key) {
-            if(_.contains(active, key)) {
-              services[key].active = true;
-            }
-          });
-          $scope.services = services;
-        }
-        // Set data
-        $scope.social = _.slice(
-                      this.preSort 
-                        ? _.chain(data).sortBy('date').reverse().value()
-                        : data
-                      , 0, limit);
-        $scope.inited = true;
-        callback();
-      });
-    }
+      'services[]': $scope.activeServices == 'all' ? _.keys(services) : [$scope.activeServices],
+      limit: limit
+    }, function(data) {
+      // First time through, find available services
+      if(!$scope.inited) {
+        var active = [];
+        _.map(data, function(item) {
+          active = _.union(active, [item.service]);
+        });
+        _.map(services, function(service, key) {
+          if(_.contains(active, key)) {
+            services[key].active = true;
+          }
+        });
+        $scope.services = services;
+      }
+      // Set data
+      $scope.social = _.slice(
+                    this.preSort 
+                      ? _.chain(data).sortBy('date').reverse().value()
+                      : data
+                    , 0, limit);
+      $scope.inited = true;
+      callback();
+    });
   }
 
   // Toggle social source
@@ -157,7 +155,7 @@ angular.module('socialApp', [
     // Run the query
     if(runQuery || !$scope.inited) {
       if($scope.socialAccount == 'custom') {
-
+      }
     }
     return false;
   };

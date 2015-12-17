@@ -20,27 +20,64 @@ class SocialFeed extends Core\ProudWidget {
 
   function initialize() {
 
-    $services = array(
-      'facebook'=> array('name' => 'Facebook', 'icon' => 'fa-facebook-square'),
-      'twitter'=> array('name' => 'Twitter', 'icon' => 'fa-twitter-square'),
-      'youtube'=> array('name' => 'Youtube', 'icon' => 'fa-youtube-play'),
-      'instagram'=> array('name' => 'Instagram', 'icon' => 'fa-instagram'),
-      'ical'=> array('name' => 'iCal', 'icon' => 'fa-calendar'),
-      'rss'=> array('name' => 'RSS Feed', 'icon' => 'fa-rss')
-    );
-    $serviceOptions = array();
+    $services = [
+      'facebook'=> ['name' => 'Facebook', 'icon' => 'fa-facebook-square'],
+      'twitter'=> ['name' => 'Twitter', 'icon' => 'fa-twitter-square'],
+      'youtube'=> ['name' => 'Youtube', 'icon' => 'fa-youtube-play'],
+      'instagram'=> ['name' => 'Instagram', 'icon' => 'fa-instagram'],
+      'ical'=> ['name' => 'iCal', 'icon' => 'fa-calendar'],
+      'rss'=> ['name' => 'RSS Feed', 'icon' => 'fa-rss']
+    ];
+    $serviceOptions = [];
     foreach($services as $key => $service) {
       $serviceOptions[$key] = $service['name'];
     }
 
     $this->settings = [
+      'accounts' => [
+        '#type' => 'radios',
+        '#title' => 'Social accounts',
+        '#default_value' => 'all',
+        '#options' => [
+          'all' => 'All (city-wide)',
+          //'agency' => 'Accounts belonging to agency',
+          'custom' => 'Specific accounts'
+        ]
+      ],
+      // @todo: we need to loop through these and validate that we are watching with the social app (call to /api/info)
+      // @todo: provide links to social settings 
+      'custom' => [
+        '#type' => 'textarea',
+        '#rows' => 3,
+        '#title' => 'Accounts to display',
+        '#description' => "<p>Enter one per line.  Example:</p><p><code>twitter|whitehouse<br/>instagram|usinterior</code></p>",
+        '#default_value' => '',
+        '#states' => [
+          'visible' => [
+            'accounts' => [
+              'operator' => '==',
+              'value' => ['custom'],
+              'glue' => '||'
+            ],
+          ],
+        ],
+      ],
       'services' => [
         '#type' => 'checkboxes',
         '#title' => 'Services',
         '#default_value' => array_keys($serviceOptions),
         '#description' => 'What social services should appear?',
         '#options' => $serviceOptions,
-        '#to_js_settings' => true
+        '#to_js_settings' => true,
+        '#states' => [
+          'hidden' => [
+            'accounts' => [
+              'operator' => '==',
+              'value' => ['custom'],
+              'glue' => '||'
+            ],
+          ],
+        ],
       ],
       'hide_controls' => [
         '#type' => 'checkbox',
@@ -57,11 +94,11 @@ class SocialFeed extends Core\ProudWidget {
         '#title' => 'Widget type',
         '#description' => 'Choose between a static feed, animated social wall, and a timeline.',
         '#default_value' => 'static',
-        '#options' => array(
+        '#options' => [
           'static' => 'Feed',
           'wall' => 'Social wall',
           'timeline' => 'Timeline'
-        )
+        ]
       ],
       'post_count' => [
         '#type' => 'text',
@@ -80,12 +117,12 @@ class SocialFeed extends Core\ProudWidget {
   public function enqueueFrontend() {
     $path = plugins_url('../includes/js/',__FILE__);
     // Running script
-    wp_enqueue_script('proud-social-app', $path . 'proud-social-app.js', array('angular'), false, true);
+    wp_enqueue_script('proud-social-app', $path . 'proud-social-app.js', ['angular'], false, true);
     // Angular resources
     $path .= 'proud-social-app/dist/';
-    wp_enqueue_script('proud-social-app-libraries', $path . 'js/libraries.min.js', array('angular'), false, true);
-    wp_enqueue_script('proud-social-app-app', $path . 'js/app.min.js', array('proud-social-app-libraries'), false, true);
-    wp_enqueue_script('proud-social-app-templates', $path . 'views/app.templates.js', array('proud-social-app-app'), false, true);
+    wp_enqueue_script('proud-social-app-libraries', $path . 'js/libraries.min.js', ['angular'], false, true);
+    wp_enqueue_script('proud-social-app-app', $path . 'js/app.min.js', ['proud-social-app-libraries'], false, true);
+    wp_enqueue_script('proud-social-app-templates', $path . 'views/app.templates.js', ['proud-social-app-app'], false, true);
   }
 
   /**
