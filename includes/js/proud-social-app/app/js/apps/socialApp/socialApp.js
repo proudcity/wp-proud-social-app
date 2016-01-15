@@ -176,6 +176,10 @@ angular.module('socialApp', [
     this.preSort = true;
   }
 
+  $scope.setPreSort = function(sort) {
+    this.preSort = sort;
+  }
+
   $scope.isServiceActive = function(service) {
     return $scope.activeServices == service;
   }
@@ -227,7 +231,7 @@ angular.module('socialApp', [
     link: function($scope, $element, $attributes) {
       // Init vars
       $scope.initVars($attributes);
-      this.preSort = true;
+      $scope.setPreSort(true);
 
       // call init
       if(!$scope.inited) {
@@ -271,30 +275,26 @@ angular.module('socialApp', [
     restrict: 'A',
     controller: "SocialController",
     templateUrl: 'views/apps/socialApp/social-static.html',
-    compile: function(tElem, tAttrs) {
-      return {
-        pre: function($scope, $element, $attributes) {
-          // Init vars
-          $scope.initVars($attributes);
+    link: function($scope, $element, $attributes) {
+      // Init vars
+      $scope.initVars($attributes);
 
-          var columnClasses = 'card-columns-xs-1'
-          if($scope.socialStaticCols > 1) {
-            columnClasses += ' card-columns-sm-2';
-          }
-          if($scope.socialStaticCols > 2) {
-            columnClasses += ' card-columns-md-3';
-          }
-          if($scope.socialStaticCols > 3) {
-            columnClasses += ' card-columns-lg-' + $scope.socialStaticCols;
-          }
-          $scope.columnClasses = columnClasses;
-          this.preSort = true;
+      var columnClasses = 'card-columns-xs-1'
+      if($scope.socialStaticCols > 1) {
+        columnClasses += ' card-columns-sm-2';
+      }
+      if($scope.socialStaticCols > 2) {
+        columnClasses += ' card-columns-md-3';
+      }
+      if($scope.socialStaticCols > 3) {
+        columnClasses += ' card-columns-lg-' + $scope.socialStaticCols;
+      }
+      $scope.columnClasses = columnClasses;
+      $scope.setPreSort(true);
 
-          // call init
-          if(!$scope.inited) {
-            $scope.switchService(null, $scope.socialPostCount);
-          }
-        }
+      // call init
+      if(!$scope.inited) {
+        $scope.switchService(null, $scope.socialPostCount);
       }
     }
   }
@@ -308,26 +308,22 @@ angular.module('socialApp', [
     restrict: 'A',
     controller: "SocialController",
     templateUrl: 'views/apps/socialApp/social-timeline.html',
-    compile: function(tElem, tAttrs) {
-      return {
-        pre: function($scope, $element, $attributes) {
-          // Init vars
-          $scope.initVars($attributes);
+    link: function($scope, $element, $attributes) {
+      // Init vars
+      $scope.initVars($attributes);
 
-          // so we can switch right/left ordering on tab change
-          $scope.oddEvenSwitch = 0;
-          $scope.timelineSwitchService = function(service) {
-            
-            $scope.switchService(service, $scope.socialPostCount, function() {
-              $scope.oddEvenSwitch = $scope.oddEvenSwitch ? 0 : 1;
-            });
-          }
+      // so we can switch right/left ordering on tab change
+      $scope.oddEvenSwitch = 0;
+      $scope.timelineSwitchService = function(service) {
+        
+        $scope.switchService(service, $scope.socialPostCount, function() {
+          $scope.oddEvenSwitch = $scope.oddEvenSwitch ? 0 : 1;
+        });
+      }
 
-          // call init
-          if(!$scope.inited) {
-            $scope.switchService(null, $scope.socialPostCount);
-          }
-        }
+      // call init
+      if(!$scope.inited) {
+        $scope.switchService(null, $scope.socialPostCount);
       }
     }
   }
