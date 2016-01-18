@@ -13,7 +13,7 @@ angular.module('socialApp', [
       var user = _.get(Proud, 'settings.global.location.city') || '';
       if(user) {
         user += ', ' + _.get(Proud, 'settings.global.location.state') || '';
-        user = user.replace('/\ /', '');
+        user = user.replace(/ /g, '_');
       }
       $rootScope.socialUser = user || 'newyork_ny';
     }
