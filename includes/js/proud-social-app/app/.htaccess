@@ -14,5 +14,3 @@ DirectoryIndex index.html
   RewriteRule ^ index.html [L]
 </IfModule>
 
-Header set Access-Control-Allow-Origin "*"
-
