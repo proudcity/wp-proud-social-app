@@ -1,10 +1,10 @@
 <div ng-if="!socialHideControls">
   <ul class="nav nav-pills">
     <li class="social-filter-{{service}}" ng-class="{active: isServiceActive('all')}">
-      <a class="text-gray" ng-click="switchService('all')" href="#"><i class="fa fa-th"></i></a>
+      <a class="text-gray" ng-click="switchService($event, 'all')" href="#"><i class="fa fa-th"></i></a>
     </li>
-    <li ng-repeat="(service, title) in services" ng-show="showServiceTab(service)" class="social-filter-{{service}}" ng-class="{active: isServiceActive(service)}">
-      <a class="text-gray" ng-click="switchService(service)" href="#"><i class="fa fa-{{service}}"></i></a>
+    <li ng-repeat="(service, obj) in services" ng-show="showServiceTab(service)" class="social-filter-{{service}}" ng-class="{active: isServiceActive(service)}">
+      <a class="text-gray" ng-click="switchService($event, service)" href="#"><i class="fa {{obj.icon}}"></i><span class="sr-only">{{obj.name}}</span></a>
     </li>
   </ul>
 </div>

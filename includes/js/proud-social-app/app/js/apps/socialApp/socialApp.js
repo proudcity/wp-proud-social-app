@@ -9,8 +9,13 @@ angular.module('socialApp', [
 .run(
   [          '$rootScope', '$window', 
     function ($rootScope,   $window) {
-      $rootScope.socialApi = _.get(Proud, 'settings.proud_social_app.socialApi') || 'http://45.55.8.62:8080/api/';
-      $rootScope.socialUser = _.get(Proud, 'settings.proud_social_app.social_user') || 'newyork_ny';
+      $rootScope.socialApi = _.get(Proud, 'settings.proud_social_app.socialApi') || 'https://feeds.proudcity.com:8443/api/';
+      var user = _.get(Proud, 'settings.global.location.city') || '';
+      if(user) {
+        user += ', ' + _.get(Proud, 'settings.global.location.state') || '';
+        user = user.replace('/\ /', '');
+      }
+      $rootScope.socialUser = user || 'newyork_ny';
     }
   ]
 )
@@ -32,33 +37,7 @@ angular.module('socialApp', [
           isArray: true
         }
       });
-    },
-    getAgency: function() {
-      return $resource($rootScope.socialApi + '/:userId/feed/:agency', {
-       format: 'json',
-        action: 'query',
-        callback: 'JSON_CALLBACK'
-      }, { 
-        'query': {
-          cache : true,
-          method: 'GET',
-          isArray: true
-        }
-      });
-    },
-    getSingle: function() {
-      return $resource($rootScope.socialApi + '/:userId/feed/', {
-       format: 'json',
-        action: 'query',
-        callback: 'JSON_CALLBACK'
-      }, { 
-        'query': {
-          cache : true,
-          method: 'GET',
-          isArray: true
-        }
-      });
-    },
+    }
   }
 }])
 
@@ -91,13 +70,14 @@ angular.module('socialApp', [
 
 .controller('SocialController', ['$scope', 'SocialFeed', '$filter', '$sce', '$rootScope', 
                          function($scope,   SocialFeed,   $filter,   $sce,   $rootScope){
-
+  var self = this;
   $scope.inited = false;
 
   // Get app settings
   var appSettings = _.get(Proud, 'settings.proud_social_app.' + $rootScope.appId);
 
-  var services = {
+  // Make defaults
+  self.appServices = {
     'facebook': {name: 'Facebook', icon: 'fa-facebook-square'},
     'twitter': {name: 'Twitter', icon: 'fa-twitter-square'},
     'youtube': {name: 'Youtube', icon: 'fa-youtube-play'},
@@ -106,32 +86,54 @@ angular.module('socialApp', [
     'rss': {'name':  'RSS Feed', 'icon':  'fa-rss'}
   };
 
-  // if(_.has(settings, 'agencies') && settings.agencies.length) {
-  //   citySocial = settings.city + '_' + settings.state_short;
-  //   citySocial = citySocial.toLowerCase().replace(' ', '');
-  // }
+  // Inits vars with directives
+  $scope.initVars = function($attributes) {
+    $scope.socialAccount = $attributes.socialAccount || 'all';
+    if($scope.socialAccount == 'custom') {
+      $scope.activeServices = $attributes.socialActiveServices || 'all';
+    }
+    else {
+      $scope.activeServices = $attributes.socialActiveServices || 'all';
+    }
+    self.userFeed = SocialFeed.getFeed();
+    $scope.socialPostCount    = $attributes.socialPostCount || 20;
+    $scope.socialHideControls = $attributes.socialHideControls || false;
+    $scope.socialStaticCols   = $attributes.socialStaticCols || 3;
+    self.preSort = true;
+  }
 
-  this.serviceFeed = function() {
-    this.userFeed.query({
-      'services[]': $scope.activeServices == 'all' ? _.keys(services) : [$scope.activeServices],
+  // Applies a active flag to services 
+  // that are present in inital query
+  self.applyActiveServices = function(data) {
+    // Init holder vars
+    var active = [];
+    // Find services in result
+    _.map(data, function(item) {
+      active = _.union(active, [item.service]);
+    });
+    // Run through appServices, 
+    _.map(self.appServices, function(service, key) {
+      if(_.contains(active, key)) {
+       self.appServices[key].active = true;
+      }
+    });
+    $scope.services = self.appServices;
+  }
+
+  // Calls feed with parameter
+  self.serviceFeed = function(service, limit, callback) {
+    var params = {
+      'services[]': $scope.activeServices == 'all' ? _.keys(self.appServices) : [$scope.activeServices],
       limit: limit
-    }, function(data) {
+    };
+    self.userFeed.query(params, function(data) {
       // First time through, find available services
       if(!$scope.inited) {
-        var active = [];
-        _.map(data, function(item) {
-          active = _.union(active, [item.service]);
-        });
-        _.map(services, function(service, key) {
-          if(_.contains(active, key)) {
-            services[key].active = true;
-          }
-        });
-        $scope.services = services;
+        self.applyActiveServices(data);
       }
       // Set data
       $scope.social = _.slice(
-                    this.preSort 
+                    self.preSort 
                       ? _.chain(data).sortBy('date').reverse().value()
                       : data
                     , 0, limit);
@@ -141,7 +143,10 @@ angular.module('socialApp', [
   }
 
   // Toggle social source
-  $scope.switchService = function(service, limit, callback) {
+  $scope.switchService = function(event, service, limit, callback) {
+    if(event) {
+      event.preventDefault();  
+    }
     var isActive = $scope.isServiceActive(service),
         runQuery = false,
         callback = callback || function() {},
@@ -154,52 +159,44 @@ angular.module('socialApp', [
     }
     // Run the query
     if(runQuery || !$scope.inited) {
-      if($scope.socialAccount == 'custom') {
-      }
+      self.serviceFeed(service, limit, function() {
+        callback();
+      });
     }
     return false;
   };
 
-  $scope.initVars = function($attributes) {
-    $scope.socialAccount = $attributes.socialAccount || 'all';
-    if($scope.socialAccount == 'custom') {
-      $scope.activeServices = $attributes.socialActiveServices || 'all';
-      this.userFeed = SocialFeed.getSingle();
-    }
-    else {
-      $scope.activeServices = $attributes.socialActiveServices || 'all';
-      this.userFeed = SocialFeed.getFeed();
-    }
-    $scope.socialPostCount    = $attributes.socialPostCount || 20;
-    $scope.socialHideControls = $attributes.socialHideControls || false;
-    $scope.socialStaticCols   = $attributes.socialStaticCols || 3;
-    this.preSort = true;
-  }
-
+  // We pre-sorting?
   $scope.setPreSort = function(sort) {
-    this.preSort = sort;
+    self.preSort = sort;
   }
 
+  // Is tab active service?
   $scope.isServiceActive = function(service) {
     return $scope.activeServices == service;
   }
 
+  // Should the tab appear?
   $scope.showServiceTab = function(service) {
     return $scope.services[service].active;
   }
 
+  // Sorts by recent
   $scope.recent = function() {
     $scope.container.isotope({sortBy : 'date'});
   }
 
+  // Shuffles order
   $scope.shuffle = function() {
     $scope.$emit('iso-method', {name:'shuffle', params:null});
   }
 
+  // Returns date time in proper format;
   $scope.getPublishedDate = function(date) {
     return new Date(date).getTime();
   }
 
+  // Gets post URL from item
   $scope.getPostUrl = function(item) {
     switch(item.service) {
       case 'facebook':
@@ -235,7 +232,7 @@ angular.module('socialApp', [
 
       // call init
       if(!$scope.inited) {
-        $scope.switchService(null, $scope.socialPostCount);
+        $scope.switchService(null, null, $scope.socialPostCount);
       }
 
       // Grab container jquery ref
@@ -294,7 +291,7 @@ angular.module('socialApp', [
 
       // call init
       if(!$scope.inited) {
-        $scope.switchService(null, $scope.socialPostCount);
+        $scope.switchService(null, null, $scope.socialPostCount);
       }
     }
   }
@@ -314,16 +311,16 @@ angular.module('socialApp', [
 
       // so we can switch right/left ordering on tab change
       $scope.oddEvenSwitch = 0;
-      $scope.timelineSwitchService = function(service) {
+      $scope.timelineSwitchService = function(event, service) {
         
-        $scope.switchService(service, $scope.socialPostCount, function() {
+        $scope.switchService(event, service, $scope.socialPostCount, function() {
           $scope.oddEvenSwitch = $scope.oddEvenSwitch ? 0 : 1;
         });
       }
 
       // call init
       if(!$scope.inited) {
-        $scope.switchService(null, $scope.socialPostCount);
+        $scope.switchService(null, null, $scope.socialPostCount);
       }
     }
   }
