@@ -15,7 +15,7 @@ angular.module('socialApp', [
         user += ', ' + _.get(Proud, 'settings.global.location.state') || '';
         user = user.replace(/ /g, '_');
       }
-      $rootScope.socialUser = user || 'newyork_ny';
+      $rootScope.socialUser = user || 'corvallis_or';
     }
   ]
 )
@@ -41,11 +41,29 @@ angular.module('socialApp', [
   }
 }])
 
-.filter('parseUrlFilter', function () {
+.filter('parseSocialText', function () {
     var urlPattern = /(http|ftp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?/gi;
     var hashPattern = /(^|\s)#(\w*[a-zA-Z_]+\w*)/gim;
     var mentionPattern =  /(^|\s)\@(\w*[a-zA-Z_]+\w*)/gim;
+    function trimText(text) {
+      if(text) {
+        var text = text.replace(/\s+/g, ' ');
+        var textArr = text.split(' ');
+        if(textArr.length > 100) {
+          var finalText = '';
+          for(var i=0; i < 100; i++) {
+            finalText = finalText+" "+ textArr[i]+" ";
+          }
+          return finalText+"...";
+        }
+        else {
+          return text;
+        }
+      }
+      return text;
+    }
     return function (text, target, service) {
+      text = trimText(text);
       var replacedText = text 
                        ? text.replace(urlPattern, '<a target="' + target + '" href="$&">$&</a>')
                        : text;
@@ -213,7 +231,7 @@ angular.module('socialApp', [
   }
 
   $scope.toSafe = function(text, service) {
-    return $sce.trustAsHtml($filter('parseUrlFilter')(text, '_blank', service));
+    return $sce.trustAsHtml($filter('parseSocialText')(text, '_blank', service));
   }
 
 }])
