@@ -199,7 +199,7 @@ angular.module('socialApp', [
     var isActive = $scope.isServiceActive(service),
         runQuery = false,
         callback = callback || function() {},
-        limit    = limit || 20;
+        limit    = limit || $scope.socialPostCount;
 
     // switch active
     if($scope.inited && !isActive) {
