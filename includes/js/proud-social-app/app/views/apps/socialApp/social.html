@@ -18,28 +18,4 @@
     <a class="btn btn-default" href="/contact"><i class="fa fa-fw fa-comments"></i> Connect with us &raquo;</a>
   </div>
 </div>
-<ul isotope-container="isotope-container" class="social-wall">
-  <li ng-repeat="item in social track by item.id" isotope-item="isotope-item" class="social-{{item.service}}" data-date="{{getPublishedDate(item.date)}}">
-    <div class="card">
-      <div class="social-card-header">
-        <div class="pull-right" ng-if="item.date" class="social-date" date="{{item.date}}">{{item.date|date}}</div>
-        <div><a ng-href="{{getPostUrl(item)}}" target="_blank"><i class="fa fa-{{item.service}}"></i></a></div>
-      </div>
-      <a ng-if="item.image" class="card-img-top-wrapper" href="{{item.url}}" target="_blank">
-        <img class="card-img-top" ng-src="{{item.image}}" />
-      </a>
-      <div class="card-block">
-        <h4 ng-if="item.title" class="card-title">{{item.title}}</h4>
-        <p class="card-text" hm-read-more
-          hm-text="{{ item.text }}" 
-          hm-limit="100" 
-          hm-more-text="more" 
-          hm-less-text="less"
-          hm-dots-class="dots"
-          hm-link-class="links">
-        </p>
-      </div>
-    </div>
-  </li>
-
-</ul>
+<div dynamic-layout items="social"></div>

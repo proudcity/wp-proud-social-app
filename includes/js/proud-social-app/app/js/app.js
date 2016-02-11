@@ -10,6 +10,6 @@ angular.module('socialAppParent', [
   'socialApp',
   "angular-inview",
   "angular-lazycompile",
-  'hm.readmore'
+  'readMore'
 ])
 

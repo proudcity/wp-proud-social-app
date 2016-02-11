@@ -1,9 +1,10 @@
 'use strict';
 
 angular.module('socialApp', [
-  'iso.directives',
+  // 'iso.directives',
   'ngResource',
   'ngSanitize',
+  'dynamicLayout'
 ])
 
 .run(
@@ -15,7 +16,7 @@ angular.module('socialApp', [
         user += ', ' + _.get(Proud, 'settings.global.location.state') || '';
         user = user.replace(/ /g, '_');
       }
-      $rootScope.socialUser = user || 'corvallis_or';
+      $rootScope.socialUser = user || 'West_Carrollton,_Ohio';
     }
   ]
 )
@@ -45,25 +46,7 @@ angular.module('socialApp', [
     var urlPattern = /(http|ftp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?/gi;
     var hashPattern = /(^|\s)#(\w*[a-zA-Z_]+\w*)/gim;
     var mentionPattern =  /(^|\s)\@(\w*[a-zA-Z_]+\w*)/gim;
-    function trimText(text) {
-      if(text) {
-        var text = text.replace(/\s+/g, ' ');
-        var textArr = text.split(' ');
-        if(textArr.length > 100) {
-          var finalText = '';
-          for(var i=0; i < 100; i++) {
-            finalText = finalText+" "+ textArr[i]+" ";
-          }
-          return finalText+"...";
-        }
-        else {
-          return text;
-        }
-      }
-      return text;
-    }
     return function (text, target, service) {
-      text = trimText(text);
       var replacedText = text 
                        ? text.replace(urlPattern, '<a target="' + target + '" href="$&">$&</a>')
                        : text;
@@ -86,8 +69,8 @@ angular.module('socialApp', [
     };
 })
 
-.controller('SocialController', ['$scope', 'SocialFeed', '$filter', '$sce', '$rootScope', 
-                         function($scope,   SocialFeed,   $filter,   $sce,   $rootScope){
+.controller('SocialController', ['$scope', 'SocialFeed', '$filter', '$sce', '$rootScope', '$timeout', 
+                         function($scope,   SocialFeed,   $filter,   $sce,   $rootScope ,  $timeout){
   var self = this;
   $scope.inited = false;
 
@@ -126,7 +109,7 @@ angular.module('socialApp', [
     // Init holder vars
     var active = [];
     // Find services in result
-    _.map(data, function(item) {
+    _.map(data, function(item, key) {
       active = _.union(active, [item.service]);
     });
     // Run through appServices, 
@@ -136,6 +119,47 @@ angular.module('socialApp', [
       }
     });
     $scope.services = self.appServices;
+  }
+
+  // Runs through and processes images once they are loaded
+  self.calculateAspectRatios = function(social, callback) {
+    var imageCount = {};
+    _.map(social, function(item, key) {
+      // Add template file
+      social[key]['template'] = 'views/apps/socialApp/default-card-style.html';
+      if(item.image) { 
+        // Create new offscreen image to test
+        var theImage = new Image();
+        theImage.src = item.image;
+        imageCount[key] = true;
+
+
+        function imagesChecker() {
+          delete imageCount[key];
+          // Finished with images
+          if(!_.size(imageCount)) {
+            callback(social);
+          }
+        }
+
+        theImage.onerror = function() {
+           imagesChecker();
+        };
+
+        // Get accurate measurements from that.
+        theImage.addEventListener('load', function () { 
+          var loaded = true;
+          if(this.naturalWidth >= this.naturalHeight ) {
+            social[key].styleAttr = (this.naturalHeight / this.naturalWidth * 100);
+          }
+          else {
+            social[key].styleAttr = 100;
+            social[key].imgStyleAttr = ((this.naturalHeight / this.naturalWidth * 100) - 100)/3;
+          }
+          imagesChecker();
+        }, true);
+      }
+    });
   }
 
   // Calls feed with parameter
@@ -149,19 +173,26 @@ angular.module('socialApp', [
       if(!$scope.inited) {
         self.applyActiveServices(data);
       }
-      // Set data
-      $scope.social = _.slice(
-                    self.preSort 
-                      ? _.chain(data).sortBy('date').reverse().value()
-                      : data
-                    , 0, limit);
-      $scope.inited = true;
-      callback();
+      // Sort / limit data
+      data = _.slice(
+                self.preSort 
+                ? _.chain(data).sortBy('date').reverse().value()
+                : data
+            ,0, limit);
+      // Load our images, calculate ratios
+      self.calculateAspectRatios(data, function() {
+        $scope.inited = true;
+        callback(data);
+      });
     });
   }
 
   // Toggle social source
   $scope.switchService = function(event, service, limit, callback) {
+    // First reset
+    // $scope.social = [];
+    // init default callback
+    callback = callback || function() {};
     if(event) {
       event.preventDefault();  
     }
@@ -177,11 +208,14 @@ angular.module('socialApp', [
     }
     // Run the query
     if(runQuery || !$scope.inited) {
-      self.serviceFeed(service, limit, function() {
+      self.serviceFeed(service, limit, function(data) {
         callback();
+        // Set data after exiting digest loop
+        $scope.$evalAsync(function( $scope ) {
+          $scope.social = data;
+        });
       });
     }
-    return false;
   };
 
   // We pre-sorting?
@@ -201,17 +235,47 @@ angular.module('socialApp', [
 
   // Sorts by recent
   $scope.recent = function() {
-    $scope.container.isotope({sortBy : 'date'});
+    $timeout(function() {
+      $scope.container.isotope({sortBy : 'date'});
+    });
   }
 
   // Shuffles order
   $scope.shuffle = function() {
-    $scope.$emit('iso-method', {name:'shuffle', params:null});
+    $timeout(function() {
+      $scope.$emit('iso-method', {name:'shuffle', params:null});
+    });
   }
 
   // Returns date time in proper format;
   $scope.getPublishedDate = function(date) {
     return new Date(date).getTime();
+  }
+
+  $scope.getAccountUrl = function(item) {
+    switch(item.service) {
+      case 'facebook':
+        return 'https://www.facebook.com/' + item.account
+
+      case 'twitter':
+        return 'https://twitter.com/' + item.account;
+
+      case 'youtube':
+        return 'https://www.youtube.com/user/' + item.account
+
+      case 'instagram':
+        return 'https://www.instagram.com/' + item.account
+    }
+  }
+
+  $scope.getAccountTitle = function(item) {
+    // If facebook and the account doesn't have a clean URL
+    if(item.service == 'facebook' && item.account && !isNaN(item.account)) {
+      return item.agencyName;
+    }
+    else {
+      return item.match;
+    }
   }
 
   // Gets post URL from item
@@ -238,7 +302,7 @@ angular.module('socialApp', [
 
 
 // Isotope social wall
-.directive('socialWall', function factory($window, $browser, $http, $timeout) {
+.directive('socialWall', function factory($window, $rootScope, $browser, $http, $timeout) {
   return {
     restrict: 'A',
     controller: "SocialController",
@@ -253,31 +317,16 @@ angular.module('socialApp', [
         $scope.switchService(null, null, $scope.socialPostCount);
       }
 
-      // Grab container jquery ref
-      $scope.container = $element.children('[isotope-container]');
+      $scope.toggleText = function() {
+        $timeout(function(){
+          $rootScope.$broadcast("dynamicLayout.layout");
+        });
+      }
 
       // Watch social
       $scope.$watch('social', function(value) {
-        if(!$scope.inited) {
-          $scope.container.isotope({
-            getSortData : {
-              date: function($elem) {
-                return $elem.data('date');
-              }
-            }
-          });
-        }
         if($scope.social) {
-          $timeout(function() {
-            var imgLoad = imagesLoaded($element);
-            imgLoad.on('always', function( instance ) {
-              
-              //$scope.$emit('iso-option', {sortBy : 'date'});
-              $scope.container.isotope({sortBy : 'date', sortAscending: false});
-              // $scope.refreshIso();
-              // 
-            });
-          }, 0);
+          console.log('ok');
         }
       });
     }
@@ -311,6 +360,13 @@ angular.module('socialApp', [
       if(!$scope.inited) {
         $scope.switchService(null, null, $scope.socialPostCount);
       }
+
+      // Watch social
+      $scope.$watch('social', function(value) {
+        if($scope.social) {
+          console.log('ok');
+        }
+      });
     }
   }
 })

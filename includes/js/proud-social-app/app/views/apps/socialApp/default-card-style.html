@@ -1,0 +1,21 @@
+<div class="dynamic-layout-item"><div class="card">
+  <a ng-if="it.image" class="card-img-top-wrapper" ng-style="{'padding-top': it.styleAttr + '%'}" href="{{it.url}}" target="_blank">
+    <img ng-style="{'margin-top': '-' + ( it.imgStyleAttr ? it.imgStyleAttr : 0 ) + '%'}" class="card-img-top" ng-src="{{it.image}}" />
+  </a>
+  <div class="social-card-header">
+    <div class="post-link pull-left"><a ng-href="{{externalScope().getPostUrl(it)}}" target="_blank"><i class="fa fa-{{it.service}}"></i></a></div>
+    <div class="date" ng-if="it.date" class="social-date" date="{{it.date}}">{{it.date|date}}</div>
+    <div class="account"><a target="_blank" ng-href="{{ externalScope().getAccountUrl(it) }}">{{ externalScope().getAccountTitle(it) }}</a></div>
+  </div>
+  <div class="card-block" ng-if="it.text">
+    <h4 ng-if="it.title" class="card-title">{{it.title}}</h4>
+    <p class="card-text" 
+        read-more 
+        words 
+        less-callback="externalScope().toggleText()" 
+        more-callback="externalScope().toggleText()"
+        limit="40" 
+        content="{{ externalScope().toSafe(it.text, it.service) }}"></p>
+    </p>
+  </div>
+</div></div>

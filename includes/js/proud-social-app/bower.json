@@ -6,22 +6,13 @@
     "angular-resource": "~1.3.16",
     "angular-inview": "~1.5.0",
     "angular-lazycompile": "git@github.com:aschmoe/angular-lazycompile#master",
-    "isotope": "1.5.25",
-    "angular-isotope": "git@github.com:aschmoe/angular-isotope.git#cb0da03db9879c933138fe59026657ce56624f45",
     "imagesloaded": "~3.1.8",
     "proudcity-patterns": "proudcity/proudcity-patterns#master",
-    "lodash": "~3.10.1"
+    "angular-readmore": "git@github.com:aschmoe/angular-readmore#master",
+    "lodash": "~3.10.1",
+    "angular-dynamic-layout": "git@github.com:aschmoe/angular-dynamic-layout#feature/24"
   },
   "resolutions": {
-    "angular": "1.3.18",
-    "isotope": "1.5.25"
-  },
-  "overrides": {
-    "isotope": {
-      "main": "jquery.isotope.min.js"
-    }
-  },
-  "devDependencies": {
-    "angular-read-more": "~1.0.3"
+    "angular": "1.3.18"
   }
 }

@@ -10,14 +10,22 @@
 </div>
 <div class="card-columns {{columnClasses}}">
   <div ng-repeat="(key, item) in social track by item.id" class="feed-type-{{item.service}} card">
-    <a ng-if="item.image" href="{{item.url}}" target="_blank">
-      <img class="card-img-top" ng-src="{{item.image}}" />
-    </a>
-    <div class="card-block">
-      <h4 ng-if="item.title" class="card-title">{{item.title}}</h4>
-      <p class="card-text" ng-bind-html="toSafe(item.text, item.service)"></p>
-      <a class="pull-right text-gray" ng-href="{{getPostUrl(item)}}" target="_blank"><i class="fa fa-{{item.service}}"></i></a>
-      <div ng-if="item.date" class="social-date text-gray" date="{{item.date}}">{{item.date|date}}</div>
+    <span class="img-top-buffer">
+      <a ng-if="item.image" class="card-img-top-wrapper" ng-style="{'padding-top': item.styleAttr + '%'}" href="{{item.url}}" target="_blank">
+        <img ng-style="{'margin-top': '-' + ( item.imgStyleAttr ? (item.imgStyleAttr + item.styleAttr) : item.styleAttr ) + '%'}" class="card-img-top" ng-src="{{item.image}}" />
+      </a>
+    </span>
+    <div class="social-card-header">
+      <div class="post-link pull-left"><a ng-href="{{getPostUrl(item)}}" target="_blank"><i class="fa fa-{{item.service}}"></i></a></div>
+      <div class="date" ng-if="item.date" class="social-date" date="{{item.date}}">{{item.date|date}}</div>
+      <div class="account"><a target="_blank" ng-href="{{ getAccountUrl(item) }}">{{ getAccountTitle(item) }}</a></div>
+    </div>
+    <div class="card-block" ng-if="item.text">
+      <p class="card-text" 
+        read-more 
+        words 
+        limit="40" 
+        content="{{ toSafe(item.text, item.service) }}"></p>
     </div>
   </div>
 </div>
