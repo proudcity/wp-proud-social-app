@@ -123,6 +123,7 @@ class SocialFeed extends Core\ProudWidget {
     wp_enqueue_script('proud-social-app-libraries', $path . 'js/libraries.min.js', ['angular'], false, true);
     wp_enqueue_script('proud-social-app-app', $path . 'js/app.min.js', ['proud-social-app-libraries'], false, true);
     wp_enqueue_script('proud-social-app-templates', $path . 'views/app.templates.js', ['proud-social-app-app'], false, true);
+    wp_enqueue_style('proud-social-app-css', $path . 'css/app.min.css');
   }
 
   /**
