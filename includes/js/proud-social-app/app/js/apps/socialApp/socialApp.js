@@ -16,7 +16,7 @@ angular.module('socialApp', [
         user += ', ' + _.get(Proud, 'settings.global.location.state') || '';
         user = user.replace(/ /g, '_');
       }
-      $rootScope.socialUser = user || 'West_Carrollton,_Ohio';
+      $rootScope.socialUser = user || 'Weston,_Wisconsin';
     }
   ]
 )
@@ -124,26 +124,29 @@ angular.module('socialApp', [
   // Runs through and processes images once they are loaded
   self.calculateAspectRatios = function(social, callback) {
     var imageCount = {};
+
+    // Checks if we're still in the queue
+    function imagesChecker(key) {
+      delete imageCount[key];
+      // Finished with images
+      if(!_.size(imageCount)) {
+        callback(social);
+      }
+    }
+
     _.map(social, function(item, key) {
       // Add template file
       social[key]['template'] = 'views/apps/socialApp/default-card-style.html';
-      if(item.image) { 
+      // Adding to queue
+      imageCount[key] = true;
+      if(item.image) {
         // Create new offscreen image to test
         var theImage = new Image();
         theImage.src = item.image;
-        imageCount[key] = true;
-
-
-        function imagesChecker() {
-          delete imageCount[key];
-          // Finished with images
-          if(!_.size(imageCount)) {
-            callback(social);
-          }
-        }
-
+  
+        // Allow for errors
         theImage.onerror = function() {
-           imagesChecker();
+           imagesChecker(key);
         };
 
         // Get accurate measurements from that.
@@ -156,8 +159,13 @@ angular.module('socialApp', [
             social[key].styleAttr = 100;
             social[key].imgStyleAttr = ((this.naturalHeight / this.naturalWidth * 100) - 100)/3;
           }
-          imagesChecker();
+          imagesChecker(key);
         }, true);
+      }
+      else {
+        setTimeout(function () {
+          imagesChecker(key);
+        }, 1);
       }
     });
   }
@@ -190,7 +198,7 @@ angular.module('socialApp', [
   // Toggle social source
   $scope.switchService = function(event, service, limit, callback) {
     // First reset
-    // $scope.social = [];
+    $scope.social = [];
     // init default callback
     callback = callback || function() {};
     if(event) {
@@ -211,7 +219,7 @@ angular.module('socialApp', [
       self.serviceFeed(service, limit, function(data) {
         callback();
         // Set data after exiting digest loop
-        $scope.$evalAsync(function( $scope ) {
+        $timeout(function() {
           $scope.social = data;
         });
       });
@@ -322,13 +330,6 @@ angular.module('socialApp', [
           $rootScope.$broadcast("dynamicLayout.layout");
         });
       }
-
-      // Watch social
-      $scope.$watch('social', function(value) {
-        if($scope.social) {
-          console.log('ok');
-        }
-      });
     }
   }
 })
