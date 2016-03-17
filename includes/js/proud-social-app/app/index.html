@@ -24,7 +24,16 @@
     <link rel="stylesheet" href="http://localhost:8080/wp-content/themes/wp-proud-theme/dist/styles/proud-vendor.css">
     <link rel="stylesheet" href="http://localhost:8080/wp-content/themes/wp-proud-theme/dist/styles/proud.css">
     <script type="text/javascript">
-        var Proud = {};
+        var Proud = {
+                settings: {
+                    proud_social_app: {
+                        instances: {
+                            "proud_social_app-1391005": {
+                            }
+                        }
+                    }
+                }
+            };
     </script>
     <script type="text/javascript">
         (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -37,7 +46,8 @@
   </head>
   <body>
     
-    <div class="widget-proud-social-app"><div social-wall social-post-count="5"></div></div>
+    <div ng-init="$root.appId = 'proud_social_app-1391005'" class="widget-proud-social-app"><div social-wall social-post-count="10" social-accounts-custom="['twitter:westcarrollton','facebook:westcarrollton']" social-active-services="['facebook','youtube']"></div></div>
+
     
         
     <!-- build:js js/bootstrap.min.js -->

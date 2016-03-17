@@ -9,7 +9,6 @@
 angular.module('socialAppParent', [
   'socialApp',
   "angular-inview",
-  "angular-lazycompile",
-  'readMore'
+  "angular-lazycompile"
 ])
 

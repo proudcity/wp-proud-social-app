@@ -25,15 +25,38 @@ class SocialFeed extends Core\ProudWidget {
       'twitter'=> ['name' => 'Twitter', 'icon' => 'fa-twitter-square'],
       'youtube'=> ['name' => 'Youtube', 'icon' => 'fa-youtube-play'],
       'instagram'=> ['name' => 'Instagram', 'icon' => 'fa-instagram'],
-      'ical'=> ['name' => 'iCal', 'icon' => 'fa-calendar'],
-      'rss'=> ['name' => 'RSS Feed', 'icon' => 'fa-rss']
+      // 'ical'=> ['name' => 'iCal', 'icon' => 'fa-calendar'],
+      // 'rss'=> ['name' => 'RSS Feed', 'icon' => 'fa-rss']
     ];
     $serviceOptions = [];
     foreach($services as $key => $service) {
       $serviceOptions[$key] = $service['name'];
     }
 
-    $this->settings = [
+    $social = Core\getSocialData();
+    $accountOptions = [];
+    if( !empty( $social ) ) {
+      $this->settings += [
+        'restrict_accounts' => [
+          '#type' => 'checkbox',
+          '#title' => 'Limit visible social accounts?',
+          '#description' => 'Limit visible social accounts?',
+          '#return_value' => '1',
+          '#label_above' => true,
+          '#replace_title' => 'Yes',
+          '#default_value' => false
+        ]
+      ];
+      foreach ($social as $value) {
+        $account = Core\extractSocialData($value);
+        $accountOptions[$value] = $account['account'] . sprintf( ' (<a href="%s" target="_blank">%s</a>)', 
+          $account['url'],  
+          $account['service']
+        );
+      }
+    }
+
+    $this->settings += [
       'accounts' => [
         '#type' => 'radios',
         '#title' => 'Social accounts',
@@ -44,14 +67,14 @@ class SocialFeed extends Core\ProudWidget {
           'custom' => 'Specific accounts'
         ]
       ],
-      // @todo: we need to loop through these and validate that we are watching with the social app (call to /api/info)
       // @todo: provide links to social settings 
       'custom' => [
-        '#type' => 'textarea',
-        '#rows' => 3,
         '#title' => 'Accounts to display',
-        '#description' => "<p>Enter one per line.  Example:</p><p><code>twitter|whitehouse<br/>instagram|usinterior</code></p>",
-        '#default_value' => '',
+        '#type' => 'checkboxes',
+        '#options' => $accountOptions,
+        '#default_value' => array_keys($accountOptions),
+        '#description' => 'Choose the social acounts that should display',
+        '#to_js_settings' => true,
         '#states' => [
           'visible' => [
             'accounts' => [
@@ -135,13 +158,17 @@ class SocialFeed extends Core\ProudWidget {
    * @param array $instance Saved values from database.
    */
   public function printWidget( $args, $instance ) {
-    $instance = $this->addSettingDefaults($instance);
+    // $instance = $this->addSettingDefaults($instance);
 
     // Compile html into a url encoded string
+    $custom = $instance['accounts'] === 'custom' && !empty( $instance['custom'] );
+    $services = $instance['accounts'] !== 'custom' && !empty( $instance['services'] );
     $lazy_html = rawurlencode(
       '<div social-' . $instance['widget_type'] 
       . ' social-post-count="' . $instance['post_count'] . '"'
       . ( $instance['hide_controls'] ? '" social-hide-controls="true"' : '' )
+      . ( $custom ? ' social-accounts-custom="[\'' . implode( '\',\'',  array_keys( $instance['custom'] ) )  . '\']"' : '' )
+      . ( $services ? ' social-active-services="[\'' . implode( '\',\'',  array_keys( $instance['services'] ) )  . '\']"' : '' )
       . ( $instance['widget_type'] == 'static' ? '" social-static-cols="1"' : '' )
       . '></div>');
     ?>

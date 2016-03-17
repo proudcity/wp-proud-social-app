@@ -4,7 +4,8 @@ angular.module('socialApp', [
   // 'iso.directives',
   'ngResource',
   'ngSanitize',
-  'dynamicLayout'
+  'dynamicLayout',
+  'readMore'
 ])
 
 .run(
@@ -16,7 +17,7 @@ angular.module('socialApp', [
         user += ', ' + _.get(Proud, 'settings.global.location.state') || '';
         user = user.replace(/ /g, '_');
       }
-      $rootScope.socialUser = user || 'Weston,_Wisconsin';
+      $rootScope.socialUser = user || 'West_Carrollton,_Ohio';
     }
   ]
 )
@@ -24,10 +25,23 @@ angular.module('socialApp', [
 // See https://www.wikipedia.com/services/api/wikipedia.photos.search.html
 // Photo url documentation: https://www.wikipedia.com/services/api/misc.urls.html
 .factory('SocialFeed', ['$resource', '$rootScope', function ($resource, $rootScope) {
-  var baseUrl = $rootScope.socialApi + '/' + $rootScope.socialUser + '/feed'
+  var baseUrl = $rootScope.socialApi + '/' + $rootScope.socialUser + '/feed';
   return {
     getFeed: function() {
       return $resource(baseUrl, {
+        format: 'json',
+        action: 'query',
+        callback: 'JSON_CALLBACK'
+      }, { 
+        'query': {
+          cache : true,
+          method: 'GET',
+          isArray: true
+        }
+      });
+    },
+    getCustomFeed: function(accounts) {
+      return $resource(baseUrl + '/accounts/' + accounts, {
         format: 'json',
         action: 'query',
         callback: 'JSON_CALLBACK'
@@ -75,7 +89,8 @@ angular.module('socialApp', [
   $scope.inited = false;
 
   // Get app settings
-  var appSettings = _.get(Proud, 'settings.proud_social_app.' + $rootScope.appId);
+
+  var appSettings = _.get(Proud, 'settings.proud_social_app.instances.' + $rootScope.appId);
 
   // Make defaults
   self.appServices = {
@@ -89,18 +104,31 @@ angular.module('socialApp', [
 
   // Inits vars with directives
   $scope.initVars = function($attributes) {
-    $scope.socialAccount = $attributes.socialAccount || 'all';
-    if($scope.socialAccount == 'custom') {
-      $scope.activeServices = $attributes.socialActiveServices || 'all';
+    // We have custom account settings
+    if($attributes.socialAccountsCustom) {
+      var accounts = encodeURIComponent(_.values($scope.$eval($attributes.socialAccountsCustom)).join());
+      self.userFeed = SocialFeed.getCustomFeed(accounts);
     }
     else {
-      $scope.activeServices = $attributes.socialActiveServices || 'all';
+      // We have services settings ?
+      var services = $scope.$eval($attributes.socialActiveServices);
+      // reduce master list
+      if(_.isArray(services)) {
+        self.appServices = _.pick(self.appServices, function(service, key) {
+          return _.contains($attributes.socialActiveServices, key);
+        });
+      }
     }
-    self.userFeed = SocialFeed.getFeed();
+    // Default feed
+    if(!self.userFeed) {
+      self.userFeed = SocialFeed.getFeed();
+    }
+    // Get other options
     $scope.socialPostCount    = $attributes.socialPostCount || 20;
     $scope.socialHideControls = $attributes.socialHideControls || false;
     $scope.socialStaticCols   = $attributes.socialStaticCols || 3;
     self.preSort = true;
+    $scope.activeServices = 'all';
   }
 
   // Applies a active flag to services 
@@ -173,7 +201,7 @@ angular.module('socialApp', [
   // Calls feed with parameter
   self.serviceFeed = function(service, limit, callback) {
     var params = {
-      'services[]': $scope.activeServices == 'all' ? _.keys(self.appServices) : [$scope.activeServices],
+      'services[]': $scope.activeServices == 'all' ? _.keys(self.appServices) : $scope.activeServices,
       limit: limit
     };
     self.userFeed.query(params, function(data) {
