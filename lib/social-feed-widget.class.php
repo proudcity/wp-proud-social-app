@@ -174,7 +174,7 @@ class SocialFeed extends Core\ProudWidget {
     ?>
     <div id="<?php print $this->id; ?>">
       <div ng-init="$root.appId = '<?php print $this->id; ?>'" in-view="socialCompile = socialCompile || '<?php print $lazy_html; ?>'"
-           lazy-compile="socialCompile" lazy-decode="true"></div>
+           lazy-compile="socialCompile" lazy-decode="true" lazy-timeout="'<?php print $lazy_html; ?>'" lazy-timeout-dur="1000"></div>
     </div>
     <?php
   }
