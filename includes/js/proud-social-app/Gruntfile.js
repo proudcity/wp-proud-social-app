@@ -21,6 +21,7 @@ module.exports = function(grunt) {
 		sass: {
 			options: {
 				includePaths: [
+					'<%= app %>',
 				  '<%= app %>/bower_components/bootstrap-sass-official/assets/stylesheets',
           '<%= app %>/bower_components/bourbon/dist',
           '<%= app %>/bower_components/proudcity-patterns/app'
