@@ -21,8 +21,8 @@
     <link rel="stylesheet" href="bower_components/angular-readmore/css/style.css">
     <link rel="stylesheet" href="css/app.css">
     <!-- endbuild -->
-    <link rel="stylesheet" href="http://localhost:8080/wp-content/themes/wp-proud-theme/dist/styles/proud-vendor.css">
-    <link rel="stylesheet" href="http://localhost:8080/wp-content/themes/wp-proud-theme/dist/styles/proud.css">
+    <!-- <link rel="stylesheet" href="http://localhost:8080/wp-content/themes/wp-proud-theme/dist/styles/proud-vendor.css"> -->
+    <!-- <link rel="stylesheet" href="http://localhost:8080/wp-content/themes/wp-proud-theme/dist/styles/proud.css"> -->
     <script type="text/javascript">
         var Proud = {
                 settings: {
@@ -46,7 +46,7 @@
   </head>
   <body>
     
-    <div ng-init="$root.appId = 'proud_social_app-1391005'" class="widget-proud-social-app"><div social-wall social-post-count="10" social-accounts-custom="['twitter:westcarrollton','facebook:westcarrollton']" social-active-services="['facebook','youtube']"></div></div>
+    <div class="container"><div ng-init="$root.appId = 'proud_social_app-1391005'" class="widget-proud-social-app"><div social-wall social-post-count="10" social-accounts-custom="['twitter:westcarrollton','facebook:westcarrollton']" social-active-services="['facebook','youtube']"></div></div></div>
 
     
         
@@ -70,7 +70,7 @@
     <!-- build:js js/libraries.min.js -->
     <!-- bower:js -->
     <script src="bower_components/angular-readmore/js/angular-readmore.js"></script>
-    <script src="bower_components/angular-dynamic-layout/dist/angular-dynamic-layout.min.js"></script>
+    <script src="bower_components/angular-dynamic-layout/dist/angular-dynamic-layout.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
     <!-- build:js js/app.min.js -->

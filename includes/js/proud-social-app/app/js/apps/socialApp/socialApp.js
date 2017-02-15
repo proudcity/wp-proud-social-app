@@ -11,7 +11,7 @@ angular.module('socialApp', [
 .run(
   [          '$rootScope', '$window', 
     function ($rootScope,   $window) {
-      $rootScope.socialApi = _.get(Proud, 'settings.proud_social_app.socialApi') || 'https://feeds.proudcity.com:8443/api/';
+      $rootScope.socialApi = _.get(Proud, 'settings.proud_social_app.socialApi') || 'https://feeds.proudcity.com/api/';
       var user = _.get(Proud, 'settings.global.location.city') || '';
       if(user) {
         user += ', ' + _.get(Proud, 'settings.global.location.state') || '';
