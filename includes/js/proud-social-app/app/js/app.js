@@ -12,3 +12,11 @@ angular.module('socialAppParent', [
   "angular-lazycompile"
 ])
 
+// Hash conflict issues require this.
+.config(
+  [          '$locationProvider',
+    function ($locationProvider) {
+      $locationProvider.hashPrefix('');
+    }
+  ]
+)
