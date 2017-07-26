@@ -1,11 +1,11 @@
 <div class="row" ng-if="!socialHideControls">
   <div class="col-xs-6 col-sm-8">
-    <ul class="nav nav-pills">
-      <li class="social-filter-{{service}}" ng-class="{active: isServiceActive('all')}">
-        <a class="text-gray" ng-click="switchService($event, 'all')" href="#"><i class="fa fa-th"></i></a>
+    <ul role="tablist" class="nav nav-pills">
+      <li role="presentation" class="social-filter-{{service}}" ng-class="{active: isServiceActive('all')}">
+        <a role="tab" aria-controls="{{$root.appId}}-outer" class="text-gray" ng-click="switchService($event, 'all')" href="#"><i class="fa fa-th"></i><span class="sr-only">Show all</span></a>
       </li>
-      <li ng-repeat="(service, obj) in services" ng-show="showServiceTab(service)" class="social-filter-{{service}}" ng-class="{active: isServiceActive(service)}">
-        <a class="text-gray" ng-click="switchService($event, service)" href="#"><i class="fa {{obj.icon}}"></i><span class="sr-only">{{obj.name}}</span></a>
+      <li role="presentation" ng-repeat="(service, obj) in services" ng-show="showServiceTab(service)" class="social-filter-{{service}}" ng-class="{active: isServiceActive(service)}">
+        <a role="tab" aria-controls="{{$root.appId}}-outer" class="text-gray" ng-click="switchService($event, service)" href="#"><i class="fa {{obj.icon}}"></i><span class="sr-only">{{obj.name}}</span></a>
       </li>
     </ul>
   </div>
@@ -18,4 +18,4 @@
     <a class="btn btn-default" href="/contact"><i class="fa fa-fw fa-comments"></i> Connect with us &raquo;</a>
   </div>
 </div>
-<div dynamic-layout items="social"></div>
+<div id="{{$root.appId}}-outer" dynamic-layout items="social"></div>

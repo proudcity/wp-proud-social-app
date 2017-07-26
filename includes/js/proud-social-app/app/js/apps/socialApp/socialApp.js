@@ -150,7 +150,7 @@ angular.module('socialApp', [
   }
 
   // Runs through and processes images once they are loaded
-  self.calculateAspectRatios = function(social, callback) {
+  self.handleImages = function(social, callback) {
     var imageCount = {};
 
     // Checks if we're still in the queue
@@ -168,6 +168,9 @@ angular.module('socialApp', [
       // Adding to queue
       imageCount[key] = true;
       if(item.image) {
+        // Add an image alt
+        social[key].imageAlt = 'Image for ' + item.service + ' post ' + $scope.getPostUrl(item);
+
         // Create new offscreen image to test
         var theImage = new Image();
         theImage.src = item.image;
@@ -216,7 +219,7 @@ angular.module('socialApp', [
                 : data
             ,0, limit);
       // Load our images, calculate ratios
-      self.calculateAspectRatios(data, function() {
+      self.handleImages(data, function() {
         $scope.inited = true;
         callback(data);
       });

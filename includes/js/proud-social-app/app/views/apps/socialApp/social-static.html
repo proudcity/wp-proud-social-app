@@ -1,14 +1,14 @@
 <div ng-if="!socialHideControls">
-  <ul class="nav nav-pills">
-    <li class="social-filter-{{service}}" ng-class="{active: isServiceActive('all')}">
-      <a class="text-gray" ng-click="switchService($event, 'all')" href="#"><i class="fa fa-th"></i></a>
+  <ul role="tablist"  class="nav nav-pills">
+    <li role="presentation" class="social-filter-{{service}}" ng-class="{active: isServiceActive('all')}">
+      <a role="tab" aria-controls="{{$root.appId}}-outer" class="text-gray" ng-click="switchService($event, 'all')" href="#"><i aria-hidden="true" class="fa fa-th"></i><span class="sr-only">Go to post</span></a>
     </li>
-    <li ng-repeat="(service, obj) in services" ng-show="showServiceTab(service)" class="social-filter-{{service}}" ng-class="{active: isServiceActive(service)}">
-      <a class="text-gray" ng-click="switchService($event, service)" href="#"><i class="fa {{obj.icon}}"></i><span class="sr-only">{{obj.name}}</span></a>
+    <li role="presentation" ng-repeat="(service, obj) in services" ng-show="showServiceTab(service)" class="social-filter-{{service}}" ng-class="{active: isServiceActive(service)}">
+      <a role="tab" aria-controls="{{$root.appId}}-outer" class="text-gray" ng-click="switchService($event, service)" href="#"><i aria-hidden="true" class="fa {{obj.icon}}"></i><span class="sr-only">{{obj.name}}</span></a>
     </li>
   </ul>
 </div>
-<div class="card-columns {{columnClasses}}">
+<div id="{{$root.appId}}-outer" class="card-columns {{columnClasses}}">
   <div ng-repeat="(key, item) in social track by item.id" class="feed-type-{{item.service}} card">
     <div class="social-card-header">
       <div class="post-link pull-left"><a ng-href="{{getPostUrl(item)}}" target="_blank"><i class="fa fa-{{item.service}}"></i></a></div>
@@ -16,8 +16,8 @@
       <div class="account"><a target="_blank" ng-href="{{ getAccountUrl(item) }}">{{ getAccountTitle(item) }}</a></div>
     </div>
     <span class="img-top-buffer">
-      <a ng-if="item.image" class="card-img-top-wrapper" ng-style="{'padding-top': item.styleAttr + '%'}" href="{{item.url}}" target="_blank">
-        <img ng-style="{'margin-top': '-' + ( item.imgStyleAttr ? (item.imgStyleAttr + item.styleAttr) : item.styleAttr ) + '%'}" class="card-img-top" ng-src="{{item.image}}" />
+      <a ng-if="{{item.image}}" class="card-img-top-wrapper" ng-style="{'padding-top': item.styleAttr + '%'}" ng-href="{{getPostUrl(item)}}" target="_blank">
+        <img ng-attr-alt="item.imageAlt" ng-style="{'margin-top': '-' + ( item.imgStyleAttr ? (item.imgStyleAttr + item.styleAttr) : item.styleAttr ) + '%'}" class="card-img-top" ng-src="{{item.image}}" />
       </a>
     </span>
     <div class="card-block" ng-if="item.text">
