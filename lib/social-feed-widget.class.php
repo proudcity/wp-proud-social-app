@@ -62,7 +62,7 @@ class SocialFeed extends Core\ProudWidget {
         '#title' => 'Social accounts',
         '#default_value' => 'all',
         '#options' => [
-          'all' => 'All (city-wide)',
+          'all' => 'All',
           //'agency' => 'Accounts belonging to agency',
           'custom' => 'Specific accounts'
         ]
