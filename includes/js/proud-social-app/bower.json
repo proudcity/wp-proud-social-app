@@ -8,7 +8,7 @@
     "angular-lazycompile": "git@github.com:aschmoe/angular-lazycompile#1.0.0",
     "proudcity-patterns": "proudcity/proudcity-patterns#master",
     "angular-readmore": "git@github.com:aschmoe/angular-readmore#master",
-    "lodash": "~3.10.1",
+    "lodash": "~4.17.4",
     "angular-dynamic-layout": "git@github.com:aschmoe/angular-dynamic-layout#feature/24"
   },
   "resolutions": {

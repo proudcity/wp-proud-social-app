@@ -25,7 +25,7 @@ angular.module('socialApp', [
 // See https://www.wikipedia.com/services/api/wikipedia.photos.search.html
 // Photo url documentation: https://www.wikipedia.com/services/api/misc.urls.html
 .factory('SocialFeed', ['$resource', '$rootScope', function ($resource, $rootScope) {
-  var baseUrl = $rootScope.socialApi + '/' + $rootScope.socialUser + '/feed';
+  var baseUrl = $rootScope.socialApi + '/' + 'Fairfax,_California' + '/feed';
   return {
     getFeed: function() {
       return $resource(baseUrl, {
@@ -365,27 +365,15 @@ angular.module('socialApp', [
   }
 })
 
-// Simple social timeline
+// Just do normal social wall for now
 .directive('socialStatic', function factory($window, $browser, $http, $timeout) {
   return {
     restrict: 'A',
     controller: "SocialController",
-    templateUrl: 'views/apps/socialApp/social-static.html',
+    templateUrl: 'views/apps/socialApp/social.html',
     link: function($scope, $element, $attributes) {
       // Init vars
       $scope.initVars($attributes);
-
-      var columnClasses = 'card-columns-xs-1'
-      if($scope.socialStaticCols > 1) {
-        columnClasses += ' card-columns-sm-2';
-      }
-      if($scope.socialStaticCols > 2) {
-        columnClasses += ' card-columns-md-3';
-      }
-      if($scope.socialStaticCols > 3) {
-        columnClasses += ' card-columns-lg-' + $scope.socialStaticCols;
-      }
-      $scope.columnClasses = columnClasses;
       $scope.setPreSort(true);
 
       // call init
@@ -393,15 +381,52 @@ angular.module('socialApp', [
         $scope.switchService(null, null, $scope.socialPostCount);
       }
 
-      // Watch social
-      $scope.$watch('social', function(value) {
-        if($scope.social) {
-          console.log('ok');
-        }
-      });
+      $scope.toggleText = function() {
+        $timeout(function(){
+          $rootScope.$broadcast("dynamicLayout.layout");
+        });
+      }
     }
   }
 })
+
+// // Simple social timeline
+// .directive('socialStatic', function factory($window, $browser, $http, $timeout) {
+//   return {
+//     restrict: 'A',
+//     controller: "SocialController",
+//     templateUrl: 'views/apps/socialApp/social-static.html',
+//     link: function($scope, $element, $attributes) {
+//       // Init vars
+//       $scope.initVars($attributes);
+//
+//       var columnClasses = 'card-columns-xs-1'
+//       if($scope.socialStaticCols > 1) {
+//         columnClasses += ' card-columns-sm-2';
+//       }
+//       if($scope.socialStaticCols > 2) {
+//         columnClasses += ' card-columns-md-3';
+//       }
+//       if($scope.socialStaticCols > 3) {
+//         columnClasses += ' card-columns-lg-' + $scope.socialStaticCols;
+//       }
+//       $scope.columnClasses = columnClasses;
+//       $scope.setPreSort(true);
+//
+//       // call init
+//       if(!$scope.inited) {
+//         $scope.switchService(null, null, $scope.socialPostCount);
+//       }
+//
+//       // Watch social
+//       $scope.$watch('social', function(value) {
+//         if($scope.social) {
+//           console.log('ok');
+//         }
+//       });
+//     }
+//   }
+// })
 
 
 
