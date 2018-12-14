@@ -25,7 +25,7 @@ angular.module('socialApp', [
 // See https://www.wikipedia.com/services/api/wikipedia.photos.search.html
 // Photo url documentation: https://www.wikipedia.com/services/api/misc.urls.html
 .factory('SocialFeed', ['$resource', '$rootScope', function ($resource, $rootScope) {
-  var baseUrl = $rootScope.socialApi + '/' + 'Fairfax,_California' + '/feed';
+  var baseUrl = $rootScope.socialApi + '/' + $rootScope.socialUser + '/feed';
   return {
     getFeed: function() {
       return $resource(baseUrl, {
