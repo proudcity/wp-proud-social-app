@@ -115,7 +115,7 @@ angular.module('socialApp', [
       // reduce master list
       if(lodash.isArray(services)) {
         self.appServices = lodash.pick(self.appServices, function(service, key) {
-          return lodash.contains($attributes.socialActiveServices, key);
+          return lodash.includes($attributes.socialActiveServices, key);
         });
       }
     }
@@ -142,7 +142,7 @@ angular.module('socialApp', [
     });
     // Run through appServices, 
     lodash.map(self.appServices, function(service, key) {
-      if(lodash.contains(active, key)) {
+      if(lodash.includes(active, key)) {
        self.appServices[key].active = true;
       }
     });
