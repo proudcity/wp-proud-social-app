@@ -11,10 +11,10 @@ angular.module('socialApp', [
 .run(
   [          '$rootScope', '$window', 
     function ($rootScope,   $window) {
-      $rootScope.socialApi = _.get(Proud, 'settings.proud_social_app.socialApi') || 'https://feeds.proudcity.com/api/';
-      var user = _.get(Proud, 'settings.global.location.city') || '';
+      $rootScope.socialApi = lodash.get(Proud, 'settings.proud_social_app.socialApi') || 'https://feeds.proudcity.com/api/';
+      var user = lodash.get(Proud, 'settings.global.location.city') || '';
       if(user) {
-        user += ', ' + _.get(Proud, 'settings.global.location.state') || '';
+        user += ', ' + lodash.get(Proud, 'settings.global.location.state') || '';
         user = user.replace(/ /g, '_');
       }
       $rootScope.socialUser = user || 'West_Carrollton,_Ohio';
@@ -90,7 +90,7 @@ angular.module('socialApp', [
 
   // Get app settings
 
-  var appSettings = _.get(Proud, 'settings.proud_social_app.instances.' + $rootScope.appId);
+  var appSettings = lodash.get(Proud, 'settings.proud_social_app.instances.' + $rootScope.appId);
 
   // Make defaults
   self.appServices = {
@@ -106,16 +106,16 @@ angular.module('socialApp', [
   $scope.initVars = function($attributes) {
     // We have custom account settings
     if($attributes.socialAccountsCustom) {
-      var accounts = encodeURIComponent(_.values($scope.$eval($attributes.socialAccountsCustom)).join());
+      var accounts = encodeURIComponent(lodash.values($scope.$eval($attributes.socialAccountsCustom)).join());
       self.userFeed = SocialFeed.getCustomFeed(accounts);
     }
     else {
       // We have services settings ?
       var services = $scope.$eval($attributes.socialActiveServices);
       // reduce master list
-      if(_.isArray(services)) {
-        self.appServices = _.pick(self.appServices, function(service, key) {
-          return _.contains($attributes.socialActiveServices, key);
+      if(lodash.isArray(services)) {
+        self.appServices = lodash.pick(self.appServices, function(service, key) {
+          return lodash.contains($attributes.socialActiveServices, key);
         });
       }
     }
@@ -137,12 +137,12 @@ angular.module('socialApp', [
     // Init holder vars
     var active = [];
     // Find services in result
-    _.map(data, function(item, key) {
-      active = _.union(active, [item.service]);
+    lodash.map(data, function(item, key) {
+      active = lodash.union(active, [item.service]);
     });
     // Run through appServices, 
-    _.map(self.appServices, function(service, key) {
-      if(_.contains(active, key)) {
+    lodash.map(self.appServices, function(service, key) {
+      if(lodash.contains(active, key)) {
        self.appServices[key].active = true;
       }
     });
@@ -157,12 +157,12 @@ angular.module('socialApp', [
     function imagesChecker(key) {
       delete imageCount[key];
       // Finished with images
-      if(!_.size(imageCount)) {
+      if(!lodash.size(imageCount)) {
         callback(social);
       }
     }
 
-    _.map(social, function(item, key) {
+    lodash.map(social, function(item, key) {
       // Add template file
       social[key]['template'] = 'views/apps/socialApp/default-card-style.html';
       // Adding to queue
@@ -204,7 +204,7 @@ angular.module('socialApp', [
   // Calls feed with parameter
   self.serviceFeed = function(service, limit, callback) {
     var params = {
-      'services[]': $scope.activeServices == 'all' ? _.keys(self.appServices) : $scope.activeServices,
+      'services[]': $scope.activeServices == 'all' ? lodash.keys(self.appServices) : $scope.activeServices,
       limit: limit
     };
     self.userFeed.query(params, function(data) {
@@ -213,9 +213,9 @@ angular.module('socialApp', [
         self.applyActiveServices(data);
       }
       // Sort / limit data
-      data = _.slice(
+      data = lodash.slice(
                 self.preSort 
-                ? _.chain(data).sortBy('date').reverse().value()
+                ? lodash.chain(data).sortBy('date').reverse().value()
                 : data
             ,0, limit);
       // Load our images, calculate ratios
